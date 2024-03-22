@@ -14,8 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const todo_1 = __importDefault(require("../models/todo"));
-const Users_1 = __importDefault(require("../models/Users"));
+const Todo_1 = __importDefault(require("./models/Todo"));
+const Users_1 = __importDefault(require("./models/Users"));
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 mongoose_1.default.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net/Tasks')
@@ -26,7 +26,7 @@ mongoose_1.default.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.m
 // Todo routes
 app.get('/', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const todos = yield todo_1.default.find();
+        const todos = yield Todo_1.default.find();
         res.status(200).json(todos);
     }
     catch (error) {
@@ -40,7 +40,7 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (!status || !heading) {
             return res.status(400).json({ message: 'Missing or invalid "status" field or "heading" field' });
         }
-        const todo = new todo_1.default({ heading, status });
+        const todo = new Todo_1.default({ heading, status });
         yield todo.save();
         res.status(200).json(todo);
     }
@@ -53,7 +53,7 @@ app.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const { heading, status } = req.body;
-        const todo = yield todo_1.default.findById(id);
+        const todo = yield Todo_1.default.findById(id);
         if (!todo) {
             return res.status(404).json({ message: 'Todo not found' });
         }
@@ -70,7 +70,7 @@ app.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 app.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        yield todo_1.default.findByIdAndDelete(id);
+        yield Todo_1.default.findByIdAndDelete(id);
         res.status(204).send();
     }
     catch (error) {
