@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from './index';
+import app from '../index';
 import { describe } from 'node:test';
 
 describe('GET /', () => {
@@ -47,11 +47,6 @@ describe('POST /', () => {
 
    
 });
-
-
-
-
-
 
 
 

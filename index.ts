@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import TodoModel, { Todo } from '../models/todo';
-import UserModel from '../models/Users';
+import TodoModel, { Todo } from './models/Todo';
+import UserModel from './models/Users';
 
 
 const app = express();
@@ -13,11 +13,22 @@ mongoose.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net
   })
   .catch((error) => console.log(error));
 
+
+
+  declare global {
+  namespace Express {
+    interface Request {
+      user?: { userId: string }; // Define the shape of the user property
+    }
+  }
+}
+
 // Todo routes
 app.get('/', async (_req: Request, res: Response) => {
   try {
     const todos = await TodoModel.find();
     res.status(200).json(todos);
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error' });
@@ -126,6 +137,27 @@ app.delete('/users/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     await UserModel.findByIdAndDelete(id);
     res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+
+
+app.post('/register', async (req: Request, res: Response) => {
+  try {
+    const { name, email, location, password } = req.body;
+    if (!name || !email || !location || !password) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+    const existingUser = await UserModel.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+    const newUser = new UserModel({ name, email, password, location });
+    await newUser.save();
+    res.status(200).json({ message: 'User registered successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error' });

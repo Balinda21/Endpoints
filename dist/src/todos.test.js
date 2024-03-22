@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supertest_1 = __importDefault(require("supertest"));
-const index_1 = __importDefault(require("./index"));
+const index_1 = __importDefault(require("../index"));
 const node_test_1 = require("node:test");
 (0, node_test_1.describe)('GET /', () => {
     test('should return an array of todos', () => __awaiter(void 0, void 0, void 0, function* () {
