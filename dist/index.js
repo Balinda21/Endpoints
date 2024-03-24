@@ -14,8 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const Todo_1 = __importDefault(require("./models/Todo"));
-const Users_1 = __importDefault(require("./models/Users"));
+const Todo_1 = __importDefault(require("./src/models/Todo"));
+const Users_1 = __importDefault(require("./src/models/Users"));
+const user_auth_1 = __importDefault(require("./src/middeware/user.auth"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 mongoose_1.default.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net/Tasks')
@@ -34,7 +39,8 @@ app.get('/', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ message: 'Server Error' });
     }
 }));
-app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// Apply isLoggedIn middleware to routes that require authentication
+app.post('/', user_auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { heading, status } = req.body;
         if (!status || !heading) {
@@ -49,7 +55,8 @@ app.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ message: 'Server Error' });
     }
 }));
-app.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// update
+app.put('/:id', user_auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const { heading, status } = req.body;
@@ -67,7 +74,8 @@ app.put('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(500).json({ message: 'Server Error' });
     }
 }));
-app.delete('/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+// delete
+app.delete('/:id', user_auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         yield Todo_1.default.findByIdAndDelete(id);
@@ -91,11 +99,12 @@ app.get('/users', (_req, res) => __awaiter(void 0, void 0, void 0, function* () 
 }));
 app.post('/users', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, email, location, password } = req.body;
-        if (!name || !email || !location || !password) {
+        const { name, email, password } = req.body;
+        if (!name || !email || !password) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
-        const newUser = new Users_1.default({ name, email, location, password });
+        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+        const newUser = new Users_1.default({ name, email, password: hashedPassword });
         yield newUser.save();
         res.status(200).json(newUser);
     }
@@ -107,15 +116,15 @@ app.post('/users', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 app.put('/users/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
-        const { name, email, location, password } = req.body;
+        const { name, email, password } = req.body;
         const user = yield Users_1.default.findById(id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         user.name = name || user.name;
         user.email = email || user.email;
-        user.location = location || user.location;
-        user.password = password || user.password;
+        user.password = hashedPassword || user.password;
         yield user.save();
         res.status(200).json(user);
     }
@@ -135,19 +144,39 @@ app.delete('/users/:id', (req, res) => __awaiter(void 0, void 0, void 0, functio
         res.status(500).json({ message: 'Server Error' });
     }
 }));
+// Login route
+app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { email, password } = req.body;
+        console.log('Login attempt with email:', email); // Add this logging statement
+        const user = yield Users_1.default.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+        console.log('User found:', user); // Add this logging statement
+        const passwordMatch = yield bcrypt_1.default.compare(password, user.password);
+        if (!passwordMatch) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+        const token = jsonwebtoken_1.default.sign({ id: user._id }, process.env.JWT_SECRET || "default_secret", { expiresIn: '1d' });
+        res.status(200).json({ message: 'Logged in successfully', token, name: user.name });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Failed to authenticate user' });
+    }
+}));
+// Register routenpm run 
 app.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { name, email, location, password } = req.body;
-        if (!name || !email || !location || !password) {
+        const { name, email, password } = req.body;
+        if (!name || !email || !password) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
-        const existingUser = yield Users_1.default.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-        const newUser = new Users_1.default({ name, email, password, location });
+        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+        const newUser = new Users_1.default({ name, email, password: hashedPassword });
         yield newUser.save();
-        res.status(200).json({ message: 'User registered successfully' });
+        res.status(200).json(newUser);
     }
     catch (error) {
         console.error(error);

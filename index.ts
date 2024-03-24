@@ -1,7 +1,12 @@
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import TodoModel, { Todo } from './models/Todo';
-import UserModel from './models/Users';
+import TodoModel, { Todo } from './src/models/Todo';
+import UserModel from './src/models/Users';
+import isLoggedIn from './src/middeware/user.auth';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
 
 
 const app = express();
@@ -13,12 +18,10 @@ mongoose.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net
   })
   .catch((error) => console.log(error));
 
-
-
-  declare global {
+declare global {
   namespace Express {
     interface Request {
-      user?: { userId: string }; // Define the shape of the user property
+      user?: { userId: string }; 
     }
   }
 }
@@ -28,14 +31,14 @@ app.get('/', async (_req: Request, res: Response) => {
   try {
     const todos = await TodoModel.find();
     res.status(200).json(todos);
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error' });
   }
 });
 
-app.post('/', async (req: Request, res: Response) => {
+
+app.post('/', isLoggedIn, async (req: Request, res: Response) => {
   try {
     const { heading, status } = req.body;
     if (!status || !heading) {
@@ -50,7 +53,8 @@ app.post('/', async (req: Request, res: Response) => {
   }
 });
 
-app.put('/:id', async (req: Request, res: Response) => {
+// update
+app.put('/:id', isLoggedIn, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { heading, status } = req.body;
@@ -72,7 +76,9 @@ app.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.delete('/:id', async (req: Request, res: Response) => {
+// delete
+
+app.delete('/:id', isLoggedIn, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await TodoModel.findByIdAndDelete(id);
@@ -96,11 +102,12 @@ app.get('/users', async (_req: Request, res: Response) => {
 
 app.post('/users', async (req: Request, res: Response) => {
   try {
-    const { name, email, location, password } = req.body;
-    if (!name || !email || !location || !password) {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
-    const newUser = new UserModel({ name, email, location, password });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new UserModel({ name, email, password: hashedPassword });
     await newUser.save();
     res.status(200).json(newUser);
   } catch (error) {
@@ -112,17 +119,17 @@ app.post('/users', async (req: Request, res: Response) => {
 app.put('/users/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, email, location, password } = req.body;
+    const { name, email, password } = req.body;
 
     const user = await UserModel.findById(id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
     user.name = name || user.name;
     user.email = email || user.email;
-    user.location = location || user.location;
-    user.password = password || user.password;
+    user.password = hashedPassword || user.password;
 
     await user.save();
     res.status(200).json(user);
@@ -143,21 +150,43 @@ app.delete('/users/:id', async (req: Request, res: Response) => {
   }
 });
 
+// Login router
+app.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    console.log('Login attempt with email:', email); 
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
 
+    console.log('User found:', user); 
 
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+  
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "default_secret", { expiresIn: '1d' });
+
+    res.status(200).json({ message: 'Logged in successfully', token, name: user.name });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to authenticate user' });
+  }
+});
+
+// register router
 app.post('/register', async (req: Request, res: Response) => {
   try {
-    const { name, email, location, password } = req.body;
-    if (!name || !email || !location || !password) {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
-    const existingUser = await UserModel.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-    const newUser = new UserModel({ name, email, password, location });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new UserModel({ name, email, password: hashedPassword });
     await newUser.save();
-    res.status(200).json({ message: 'User registered successfully' });
+    res.status(200).json(newUser);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error' });
