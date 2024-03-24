@@ -26,8 +26,8 @@ const isLoggedIn = (req, res, next) => __awaiter(void 0, void 0, void 0, functio
         if (!user) {
             return res.status(401).json({ message: 'User not found' });
         }
-        req.user = { userId: decodedToken.id }; // Attach user information to the request object
-        next(); // Call next to move to the next middleware or route handler
+        req.user = { userId: decodedToken.id };
+        next();
     }
     catch (error) {
         console.error(error);

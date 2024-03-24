@@ -6,14 +6,99 @@ import isLoggedIn from './src/middeware/user.auth';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-dotenv.config();
+import swaggerjsdoc from 'swagger-jsdoc';
+import swaggerui from 'swagger-ui-express';
 
+dotenv.config();
 
 const app = express();
 app.use(express.json());
 
+const options = {
+  definition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Todos API Documentation",
+      version: "1.0.0",
+      description: "This is a simple todo API application made with Express and documented with Swagger.",
+      contact: {
+        name: "Maurice Kwizera Balinda",
+        email: "balindamoris@gmail.com"
+      }
+    },
+    servers: [
+      {
+        url: "http://localhost:3000"
+      }
+    ],
+    components: {
+      schemas: {
+        Todo: {
+          type: "object",
+          properties: {
+            heading: {
+              type: "string"
+            },
+            status: {
+              type: "boolean"
+            }
+          },
+          required: ["heading", "status"]
+        },
+        Login: {
+          type: "object",
+          properties: {
+            email: {
+              type: "string"
+            },
+            password: {
+              type: "string"
+            }
+          },
+          required: ["email", "password"]
+        },
+        Register: {
+          type: "object",
+          properties: {
+            name: {
+              type: "string"
+            },
+            email: {
+              type: "string"
+            },
+            password: {
+              type: "string"
+            }
+          },
+          required: ["name", "email", "password"]
+        }
+      },
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT"
+        }
+      }
+    },
+    security: [{ bearerAuth: [] }]
+  },
+  apis: ["./dist/*.js"] // Adjusted path to match route handler files
+};
+
+
+
+
 mongoose.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net/Tasks')
   .then(() => {
+
+    const spacs = swaggerjsdoc(options)
+    app.use(
+      '/api-docs',
+      swaggerui.serve,
+      swaggerui.setup(spacs)
+
+    )
     console.log('Database connected successfully');
   })
   .catch((error) => console.log(error));
@@ -25,6 +110,34 @@ declare global {
     }
   }
 }
+// Todo routes
+
+/**
+ * @swagger
+ * tags:
+ *   name: Todos
+ *   description: Todo management endpoints
+ */
+
+/**
+  * @swagger
+ * /:
+ *   get:
+ *     summary: Retrieve all todos
+ *     description: Retrieve a list of all todos
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of todos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Todo'
+ */
+
 
 // Todo routes
 app.get('/', async (_req: Request, res: Response) => {
@@ -36,6 +149,29 @@ app.get('/', async (_req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+/**
+ * @swagger
+ * /:
+ *   post:
+ *     summary: Create a new todo
+ *     description: Create a new todo with the provided heading and status status
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Todo'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: The created todo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Todo'
+ */
+
 
 
 app.post('/', isLoggedIn, async (req: Request, res: Response) => {
@@ -53,6 +189,36 @@ app.post('/', isLoggedIn, async (req: Request, res: Response) => {
   }
 });
 
+
+/**
+ * @swagger
+ * /{id}:
+ *   put:
+ *     summary: Update a todo
+ *     description: Update the heading and/or status status of a todo
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the todo to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Todo'
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: The updated todo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Todo'
+ */
 // update
 app.put('/:id', isLoggedIn, async (req: Request, res: Response) => {
   try {
@@ -75,6 +241,26 @@ app.put('/:id', isLoggedIn, async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
+/**
+ * @swagger
+ * /{id}:
+ *   delete:
+ *     summary: Delete a todo
+ *     description: Delete a todo by its ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the todo to delete
+ *         schema:
+ *           type: string
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       204:
+ *         description: Todo deleted successfully
+ */
 
 // delete
 
@@ -150,7 +336,48 @@ app.delete('/users/:id', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @swagger
+ * /login:
+ *   post:
+ *     summary: Authenticate user
+ *     description: Login with email and password to receive a JWT token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - email
+ *               - password
+ *     responses:
+ *       200:
+ *         description: Logged in successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *       401:
+ *         description: Invalid email or password
+ *       500:
+ *         description: Failed to authenticate user
+ */
+
 // Login router
+
 app.post('/login', async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -176,6 +403,45 @@ app.post('/login', async (req: Request, res: Response) => {
   }
 });
 
+
+
+
+/**
+ * @swagger
+ * /register:
+ *   post:
+ *     summary: Register a new user
+ *     description: Register a new user with name, email, and password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *     responses:
+ *       200:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Missing required fields
+ *       500:
+ *         description: Server Error
+ */
+
 // register router
 app.post('/register', async (req: Request, res: Response) => {
   try {
@@ -192,5 +458,6 @@ app.post('/register', async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
 
 export default app;
