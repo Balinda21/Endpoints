@@ -7,7 +7,7 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const token = req.headers.authorization?.split(' ')[1]; // Assuming the token is in the format: Bearer <token>
     if (!token) {
-      return res.status(401).json({ message: 'No authorization token found' });
+      return res.status(401).json({ message: 'You need to login first' });
     }
     
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET || "default_secret") as { id: string };
