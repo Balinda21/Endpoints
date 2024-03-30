@@ -20,9 +20,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-const allowedOrigins = ['http://127.0.0.1:5500','https://portfolio-backend-cy9p.onrender.com/' ];
+const allowedOrigins = ['http://127.0.0.1:5500','http://localhost:3000' ];
 app.use(cors({
-  origin: allowedOrigins
+  origin: allowedOrigins,
+  credentials: true
 }));
 
 const options = {
