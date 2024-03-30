@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(cors({
-  origin: "https://portfolio-backend-cy9p.onrender.com",
+  origin: ["https://balinda21.github.io/MY-BRAND/","https://portfolio-backend-cy9p.onrender.com"],
   credentials: true
 }));
 
