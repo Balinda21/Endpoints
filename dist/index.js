@@ -32,7 +32,7 @@ const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use((0, cors_1.default)({
-    origin: "https://balinda21.github.io/MY-BRAND/",
+    origin: "https://portfolio-backend-cy9p.onrender.com",
     credentials: true
 }));
 const options = {
