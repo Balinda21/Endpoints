@@ -20,9 +20,8 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-const allowedOrigins = ['http://127.0.0.1:5500','http://localhost:3000' ];
 app.use(cors({
-  origin: "https://portfolio-backend-cy9p.onrender.com",
+  origin: "https://balinda21.github.io/MY-BRAND/",
   credentials: true
 }));
 
