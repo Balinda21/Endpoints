@@ -205,7 +205,6 @@ app.delete('/users/:id', (req, res) => __awaiter(void 0, void 0, void 0, functio
  *       500:
  *         description: Failed to authenticate user
  */
-// Login router
 // Define Joi schema for login fields
 const loginSchema = joi_1.default.object({
     email: joi_1.default.string().email().required().messages({

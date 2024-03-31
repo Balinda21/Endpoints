@@ -226,7 +226,7 @@ app.delete('/users/:id', async (req: Request, res: Response) => {
  *         description: Failed to authenticate user
  */
 
-// Login router
+
 // Define Joi schema for login fields
 const loginSchema = Joi.object({
   email: Joi.string().email().required().messages({
