@@ -19,12 +19,16 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.options('*', cors());
 
-app.use(cors({
-  origin: ["https://balinda21.github.io/MY-BRAND/","https://portfolio-backend-cy9p.onrender.com/login"],
-  credentials: true
-}));
+
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', 'https://balinda21.github.io');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
 
 const options = {
   definition: {
