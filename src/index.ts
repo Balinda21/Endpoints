@@ -19,6 +19,7 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.options('*', cors());
 
 app.use(cors({
   origin: ["https://balinda21.github.io/MY-BRAND/","https://portfolio-backend-cy9p.onrender.com"],
