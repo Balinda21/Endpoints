@@ -245,7 +245,7 @@ const loginSchema = Joi.object({
 
 app.post('/login', async (req: Request, res: Response) => {
   try {
- 
+    // Validate request body against Joi schema
     const validationResult = loginSchema.validate(req.body);
     if (validationResult.error) {
       // If validation fails, return error response
@@ -267,14 +267,25 @@ app.post('/login', async (req: Request, res: Response) => {
     }
   
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "default_secret", { expiresIn: '1d' });
+    
+    // Assuming you have retrieved the user's name from the database after successful login
+    const userName = user.name;
+
+    // Set the JWT token cookie
     res.cookie('token', token, { httpOnly: true, maxAge: 86400000 });
 
+    // Set the user_name cookie
+    res.cookie('user_name', userName, { maxAge: 86400000 });
+
+    // Send response
     res.status(200).json({ message: 'Logged in successfully', token, name: user.name });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to authenticate user' });
   }
 });
+
+
 
 
 /**
