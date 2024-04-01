@@ -242,7 +242,6 @@ const loginSchema = Joi.object({
   })
 });
 
-
 app.post('/login', async (req: Request, res: Response) => {
   try {
     // Validate request body against Joi schema
@@ -284,7 +283,6 @@ app.post('/login', async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Failed to authenticate user' });
   }
 });
-
 
 
 
