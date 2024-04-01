@@ -661,7 +661,7 @@ const contactSchema = Joi.object({
 });
 
 
-app.post('/submit-contact-form', isLoggedIn, async (req: Request, res: Response) => {
+app.post('/submit-contact-form', async (req: Request, res: Response) => {
   try {
     // Validate request body against Joi schema
     const { error } = contactSchema.validate(req.body);
@@ -725,7 +725,7 @@ app.post('/submit-contact-form', isLoggedIn, async (req: Request, res: Response)
  *       '500':
  *         description: Server error
  *
- * /api/comments/:
+ * /api/get/comments/:
  *   get:
  *     summary: Get comments for a post
  *     description: Retrieve all comments for a specific post.
@@ -761,7 +761,7 @@ app.post('/submit-contact-form', isLoggedIn, async (req: Request, res: Response)
 
 // Define endpoint to add a new comment
 // Define endpoint to add a new comment
-app.post('/api/comments', async (req: Request, res: Response) => {
+app.post('/api/comments', isLoggedIn, async  (req: Request, res: Response) => {
   try {
     const { text } = req.body;
 
@@ -780,7 +780,7 @@ app.post('/api/comments', async (req: Request, res: Response) => {
 });
 
 // Define endpoint to get all comments for a specific post
-app.get('/api/comments/', async (req: Request, res: Response) => {
+app.get('/api/get/comments/', async (req: Request, res: Response) => {
   try {
 
     // Find all comments for the specified post

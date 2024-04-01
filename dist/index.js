@@ -605,7 +605,7 @@ const contactSchema = joi_1.default.object({
         'any.required': 'Message is required'
     })
 });
-app.post('/submit-contact-form', user_auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/submit-contact-form', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Validate request body against Joi schema
         const { error } = contactSchema.validate(req.body);
@@ -667,7 +667,7 @@ app.post('/submit-contact-form', user_auth_1.default, (req, res) => __awaiter(vo
  *       '500':
  *         description: Server error
  *
- * /api/comments/:
+ * /api/get/comments/:
  *   get:
  *     summary: Get comments for a post
  *     description: Retrieve all comments for a specific post.
@@ -701,7 +701,7 @@ app.post('/submit-contact-form', user_auth_1.default, (req, res) => __awaiter(vo
  */
 // Define endpoint to add a new comment
 // Define endpoint to add a new comment
-app.post('/api/comments', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/api/comments', user_auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { text } = req.body;
         // Create a new comment document
@@ -717,7 +717,7 @@ app.post('/api/comments', (req, res) => __awaiter(void 0, void 0, void 0, functi
     }
 }));
 // Define endpoint to get all comments for a specific post
-app.get('/api/comments/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/api/get/comments/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Find all comments for the specified post
         const comments = yield comments_1.default.find({});
