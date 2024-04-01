@@ -218,6 +218,7 @@ const loginSchema = joi_1.default.object({
 });
 app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // Validate request body against Joi schema
         const validationResult = loginSchema.validate(req.body);
         if (validationResult.error) {
             // If validation fails, return error response
@@ -235,7 +236,13 @@ app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         const token = jsonwebtoken_1.default.sign({ id: user._id }, process.env.JWT_SECRET || "default_secret", { expiresIn: '1d' });
+        // Assuming you have retrieved the user's name from the database after successful login
+        const userName = user.name;
+        // Set the JWT token cookie
         res.cookie('token', token, { httpOnly: true, maxAge: 86400000 });
+        // Set the user_name cookie
+        res.cookie('user_name', userName, { maxAge: 86400000 });
+        // Send response
         res.status(200).json({ message: 'Logged in successfully', token, name: user.name });
     }
     catch (error) {
@@ -605,7 +612,7 @@ const contactSchema = joi_1.default.object({
         'any.required': 'Message is required'
     })
 });
-app.post('/submit-contact-form', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/submit-contact-form', user_auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Validate request body against Joi schema
         const { error } = contactSchema.validate(req.body);
