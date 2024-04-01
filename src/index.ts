@@ -661,7 +661,7 @@ const contactSchema = Joi.object({
 });
 
 
-app.post('/submit-contact-form', async (req: Request, res: Response) => {
+app.post('/submit-contact-form',isLoggedIn, async (req: Request, res: Response) => {
   try {
     // Validate request body against Joi schema
     const { error } = contactSchema.validate(req.body);
