@@ -12,6 +12,8 @@ import cookieParser from 'cookie-parser';
 import Joi from 'joi';
 import ContactModel from './models/contact.js';
 import CommentModel from './models/comments.js';
+import { checkUser } from './middeware/isAdmin.auth.js';
+import { loginUser } from './Controllers/authController.js';
 dotenv.config();
 const app = express();
 app.use(express.json());
@@ -106,7 +108,7 @@ app.get('/users', async (_req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
-app.post('/users', async (req, res) => {
+app.post('create/users', async (req, res) => {
     try {
         const { name, email, password } = req.body;
         if (!name || !email || !password) {
@@ -122,7 +124,7 @@ app.post('/users', async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
-app.put('/users/:id', async (req, res) => {
+app.put('edit/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { name, email, password } = req.body;
@@ -202,7 +204,7 @@ const loginSchema = Joi.object({
         'any.required': 'Password is required'
     })
 });
-app.post('/login', async (req, res) => {
+app.post('/login', loginUser, async (req, res) => {
     try {
         // Validate request body against Joi schema
         const validationResult = loginSchema.validate(req.body);
@@ -314,21 +316,19 @@ const registerSchema = Joi.object({
 // register router
 app.post('/register', async (req, res) => {
     try {
-        // Validate request body against Joi schema
-        const validationResult = registerSchema.validate(req.body);
-        if (validationResult.error) {
-            // If validation fails, return error response
-            return res.status(400).json({ message: validationResult.error.details[0].message });
-        }
-        // If validation passes, continue processing the registration
+        // Extract user details from request body
         const { name, email, password } = req.body;
+        // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new UserModel({ name, email, password: hashedPassword });
+        // Create a new user document with hashed password and default isAdmin value
+        const newUser = new UserModel({ name, email, password: hashedPassword, });
+        // Save the new user to the database
         await newUser.save();
-        res.status(200).json(newUser);
+        // Respond with the newly created user document
+        res.status(201).json(newUser);
     }
     catch (error) {
-        console.error(error);
+        console.error('Error during user registration:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 });
@@ -409,6 +409,16 @@ app.post('/api/blogs', async (req, res) => {
  *                 $ref: '#/components/schemas/BlogPost'
  */
 // Define route to get all blogs
+app.get('*', checkUser);
+app.get('/api/user', (req, res) => {
+    const user = res.locals.user;
+    if (user) {
+        res.status(200).json(user);
+    }
+    else {
+        res.status(404).json({ error: 'User data not found' });
+    }
+});
 app.get('/api/get/blogs', async (_req, res) => {
     try {
         const blogs = await BlogModel.find();

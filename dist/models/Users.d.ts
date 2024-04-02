@@ -23,12 +23,13 @@
 /// <reference types="mongoose/types/virtuals" />
 /// <reference types="mongoose/types/inferschematype" />
 import mongoose, { Document } from 'mongoose';
-export interface User extends Document {
+export interface IUser extends Document {
     name: string;
     email: string;
     password: string;
+    isAdmin: boolean;
 }
-declare const UserModel: mongoose.Model<User, {}, {}, {}, mongoose.Document<unknown, {}, User> & User & {
+declare const UserModel: mongoose.Model<IUser, {}, {}, {}, mongoose.Document<unknown, {}, IUser> & IUser & {
     _id: mongoose.Types.ObjectId;
 }, any>;
 export default UserModel;

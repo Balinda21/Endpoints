@@ -13,6 +13,8 @@ import cookieParser from 'cookie-parser';
 import Joi from 'joi';
 import ContactModel, { Contact as ContactModelInterface } from './models/contact.js'; 
 import CommentModel from './models/comments.js';
+import { checkUser } from './middeware/isAdmin.auth.js';
+import { loginUser } from './Controllers/authController.js';
 
 dotenv.config();
 
@@ -140,7 +142,7 @@ app.get('/users', async (_req: Request, res: Response) => {
 });
 
 
-app.post('/users', async (req: Request, res: Response) => {
+app.post('create/users', async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -156,7 +158,7 @@ app.post('/users', async (req: Request, res: Response) => {
   }
 });
 
-app.put('/users/:id', async (req: Request, res: Response) => {
+app.put('edit/users/:id',  async  (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, email, password } = req.body;
@@ -242,7 +244,7 @@ const loginSchema = Joi.object({
   })
 });
 
-app.post('/login', async (req: Request, res: Response) => {
+app.post('/login', loginUser, async (req: Request, res: Response) => {
   try {
     // Validate request body against Joi schema
     const validationResult = loginSchema.validate(req.body);
@@ -368,25 +370,25 @@ const registerSchema = Joi.object({
 // register router
 app.post('/register', async (req: Request, res: Response) => {
   try {
-    // Validate request body against Joi schema
-    const validationResult = registerSchema.validate(req.body);
-    if (validationResult.error) {
-      // If validation fails, return error response
-      return res.status(400).json({ message: validationResult.error.details[0].message });
-    }
+      // Extract user details from request body
+      const { name, email, password } = req.body;
 
-    // If validation passes, continue processing the registration
-    const { name, email, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new UserModel({ name, email, password: hashedPassword });
-    await newUser.save();
-    res.status(200).json(newUser);
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Create a new user document with hashed password and default isAdmin value
+      const newUser = new UserModel({ name, email, password: hashedPassword, });
+
+      // Save the new user to the database
+      await newUser.save();
+
+      // Respond with the newly created user document
+      res.status(201).json(newUser);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+      console.error('Error during user registration:', error);
+      res.status(500).json({ message: 'Server Error' });
   }
 });
-
 
 /**
  * @swagger
@@ -473,6 +475,15 @@ app.post('/api/blogs', async (req: Request, res: Response) => {
  */
 
 // Define route to get all blogs
+app.get('*', checkUser);
+app.get('/api/user', (req: Request, res: Response) => {
+  const user = res.locals.user;
+  if (user) {
+      res.status(200).json(user);
+  } else {
+      res.status(404).json({ error: 'User data not found' });
+  }
+});
 app.get('/api/get/blogs', async (_req: Request, res: Response) => {
   try {
     const blogs = await BlogModel.find();
