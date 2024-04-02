@@ -8,13 +8,11 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import swaggerjsdoc from 'swagger-jsdoc';
 import swaggerui from 'swagger-ui-express';
-import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import Joi from 'joi';
 import ContactModel, { Contact as ContactModelInterface } from './models/contact.js'; 
 import CommentModel from './models/comments.js';
 import { checkUser } from './middeware/isAdmin.auth.js';
-import { loginUser } from './Controllers/authController.js';
 
 dotenv.config();
 
