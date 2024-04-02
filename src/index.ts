@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import isLoggedIn from './middeware/user.auth';
-import UserModel from './models/Users';
-import BlogModel from './models/blogs';
+import isLoggedIn from './middeware/user.auth.js';
+import UserModel from './models/Users.js';
+import BlogModel from './models/blogs.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
@@ -11,8 +11,8 @@ import swaggerui from 'swagger-ui-express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import Joi from 'joi';
-import ContactModel, { Contact as ContactModelInterface } from './models/contact'; 
-import CommentModel from './models/comments';
+import ContactModel, { Contact as ContactModelInterface } from './models/contact.js'; 
+import CommentModel from './models/comments.js';
 
 dotenv.config();
 
@@ -698,6 +698,55 @@ app.post('/submit-contact-form', async (req: Request, res: Response) => {
     }
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/get/contacts:
+ *   get:
+ *     summary: Get all contact entries
+ *     description: Retrieve a list of all contact entries.
+ *     responses:
+ *       '200':
+ *         description: A list of contact entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Contact'
+ *       '500':
+ *         description: Server Error
+ */
+
+// Define route to get all contact entries
+app.get('/api/get/contacts', async (_req: Request, res: Response) => {
+  try {
+    // Fetch all contact entries from the database
+    const contacts = await ContactModel.find();
+    
+    // Return the fetched contacts as a JSON response
+    res.status(200).json(contacts);
+  } catch (error) {
+    // Handle errors
+    console.error('Error fetching contacts:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
+// Define route to get all contact entries
+app.get('/api/get/contacts', async (_req: Request, res: Response) => {
+  try {
+    // Fetch all contact entries from the database
+    const contacts = await ContactModel.find();
+    
+    // Return the fetched contacts as a JSON response
+    res.status(200).json(contacts);
+  } catch (error) {
+    // Handle errors
+    console.error('Error fetching contacts:', error);
     res.status(500).json({ message: 'Server Error' });
   }
 });

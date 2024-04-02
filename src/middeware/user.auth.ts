@@ -1,7 +1,7 @@
 // src/middleware/user.auth.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import UserModel from '../models/Users';
+import UserModel from '../models/Users.js';
 
 const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
   try {

@@ -1,35 +1,21 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const mongoose_1 = __importDefault(require("mongoose"));
-const user_auth_1 = __importDefault(require("./middeware/user.auth"));
-const Users_1 = __importDefault(require("./models/Users"));
-const blogs_1 = __importDefault(require("./models/blogs"));
-const bcrypt_1 = __importDefault(require("bcrypt"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const dotenv_1 = __importDefault(require("dotenv"));
-const swagger_jsdoc_1 = __importDefault(require("swagger-jsdoc"));
-const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
-const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const joi_1 = __importDefault(require("joi"));
-const contact_1 = __importDefault(require("./models/contact"));
-const comments_1 = __importDefault(require("./models/comments"));
-dotenv_1.default.config();
-const app = (0, express_1.default)();
-app.use(express_1.default.json());
-app.use((0, cookie_parser_1.default)());
+import express from 'express';
+import mongoose from 'mongoose';
+import isLoggedIn from './middeware/user.auth.js';
+import UserModel from './models/Users.js';
+import BlogModel from './models/blogs.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import swaggerjsdoc from 'swagger-jsdoc';
+import swaggerui from 'swagger-ui-express';
+import cookieParser from 'cookie-parser';
+import Joi from 'joi';
+import ContactModel from './models/contact.js';
+import CommentModel from './models/comments.js';
+dotenv.config();
+const app = express();
+app.use(express.json());
+app.use(cookieParser());
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', 'https://balinda21.github.io');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -103,70 +89,70 @@ const options = {
     },
     apis: ["./dist/*.js"] // Adjusted path to match route handler files
 };
-mongoose_1.default.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net/Tasks')
+mongoose.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net/Tasks')
     .then(() => {
-    const spacs = (0, swagger_jsdoc_1.default)(options);
-    app.use('/endpoints-docs', swagger_ui_express_1.default.serve, swagger_ui_express_1.default.setup(spacs));
+    const spacs = swaggerjsdoc(options);
+    app.use('/endpoints-docs', swaggerui.serve, swaggerui.setup(spacs));
     console.log('Connected to database');
 })
     .catch((error) => console.log(error));
-app.get('/users', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/users', async (_req, res) => {
     try {
-        const users = yield Users_1.default.find();
+        const users = await UserModel.find();
         res.status(200).json(users);
     }
     catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
-}));
-app.post('/users', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+app.post('/users', async (req, res) => {
     try {
         const { name, email, password } = req.body;
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
-        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-        const newUser = new Users_1.default({ name, email, password: hashedPassword });
-        yield newUser.save();
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new UserModel({ name, email, password: hashedPassword });
+        await newUser.save();
         res.status(200).json(newUser);
     }
     catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
-}));
-app.put('/users/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+app.put('/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { name, email, password } = req.body;
-        const user = yield Users_1.default.findById(id);
+        const user = await UserModel.findById(id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
         user.name = name || user.name;
         user.email = email || user.email;
         user.password = hashedPassword || user.password;
-        yield user.save();
+        await user.save();
         res.status(200).json(user);
     }
     catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
-}));
-app.delete('/users/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+});
+app.delete('/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        yield Users_1.default.findByIdAndDelete(id);
+        await UserModel.findByIdAndDelete(id);
         res.status(204).send();
     }
     catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
-}));
+});
 /**
  * @swagger
  * /login:
@@ -207,16 +193,16 @@ app.delete('/users/:id', (req, res) => __awaiter(void 0, void 0, void 0, functio
  *         description: Failed to authenticate user
  */
 // Define Joi schema for login fields
-const loginSchema = joi_1.default.object({
-    email: joi_1.default.string().email().required().messages({
+const loginSchema = Joi.object({
+    email: Joi.string().email().required().messages({
         'any.required': 'Email is required',
         'string.email': 'Email must be a valid email address'
     }),
-    password: joi_1.default.string().required().messages({
+    password: Joi.string().required().messages({
         'any.required': 'Password is required'
     })
 });
-app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/login', async (req, res) => {
     try {
         // Validate request body against Joi schema
         const validationResult = loginSchema.validate(req.body);
@@ -226,16 +212,16 @@ app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         }
         const { email, password } = req.body;
         console.log('Login attempt with email:', email);
-        const user = yield Users_1.default.findOne({ email });
+        const user = await UserModel.findOne({ email });
         if (!user) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         console.log('User found:', user);
-        const passwordMatch = yield bcrypt_1.default.compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(password, user.password);
         if (!passwordMatch) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
-        const token = jsonwebtoken_1.default.sign({ id: user._id }, process.env.JWT_SECRET || "default_secret", { expiresIn: '1d' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "default_secret", { expiresIn: '1d' });
         // Assuming you have retrieved the user's name from the database after successful login
         const userName = user.name;
         // Set the JWT token cookie
@@ -249,7 +235,7 @@ app.post('/login', (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         console.error(error);
         res.status(500).json({ message: 'Failed to authenticate user' });
     }
-}));
+});
 /**
  * @swagger
  * /logout:
@@ -311,22 +297,22 @@ app.post('/logout', (req, res) => {
  *         description: Server Error
  */
 // Define Joi schema for registration fields
-const registerSchema = joi_1.default.object({
-    name: joi_1.default.string().required().messages({
+const registerSchema = Joi.object({
+    name: Joi.string().required().messages({
         'any.required': 'Name is required'
     }),
-    email: joi_1.default.string().email().required().messages({
+    email: Joi.string().email().required().messages({
         'any.required': 'Email is required',
         'string.email': 'Email must be a valid email address'
     }),
-    password: joi_1.default.string().required().pattern(new RegExp('^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$'))
+    password: Joi.string().required().pattern(new RegExp('^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$'))
         .messages({
         'any.required': 'Password is required',
         'string.pattern.base': 'Password must contain at least one letter, one number, and be at least 8 characters long'
     })
 });
 // register router
-app.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/register', async (req, res) => {
     try {
         // Validate request body against Joi schema
         const validationResult = registerSchema.validate(req.body);
@@ -336,16 +322,16 @@ app.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
         // If validation passes, continue processing the registration
         const { name, email, password } = req.body;
-        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
-        const newUser = new Users_1.default({ name, email, password: hashedPassword });
-        yield newUser.save();
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new UserModel({ name, email, password: hashedPassword });
+        await newUser.save();
         res.status(200).json(newUser);
     }
     catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
-}));
+});
 /**
  * @swagger
  *
@@ -386,16 +372,16 @@ app.post('/register', (req, res) => __awaiter(void 0, void 0, void 0, function* 
  *                   $ref: '#/components/schemas/BlogPost'
  */
 // Define route to add a new blog
-app.post('/api/blogs', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/api/blogs', async (req, res) => {
     try {
         const { picture, title, date, description } = req.body;
-        const newBlog = new blogs_1.default({
+        const newBlog = new BlogModel({
             picture,
             title,
             date,
             description
         });
-        yield newBlog.save();
+        await newBlog.save();
         // Send response
         res.status(201).json({ message: 'Blog added successfully', blog: newBlog });
     }
@@ -404,7 +390,7 @@ app.post('/api/blogs', (req, res) => __awaiter(void 0, void 0, void 0, function*
         console.error('Error adding blog:', error);
         res.status(500).json({ message: 'Server error' });
     }
-}));
+});
 /**
  * @swagger
  *
@@ -423,16 +409,16 @@ app.post('/api/blogs', (req, res) => __awaiter(void 0, void 0, void 0, function*
  *                 $ref: '#/components/schemas/BlogPost'
  */
 // Define route to get all blogs
-app.get('/api/get/blogs', (_req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/api/get/blogs', async (_req, res) => {
     try {
-        const blogs = yield blogs_1.default.find();
+        const blogs = await BlogModel.find();
         res.status(200).json(blogs);
     }
     catch (error) {
         console.error('Error fetching blogs:', error);
         res.status(500).json({ message: 'Server Error' });
     }
-}));
+});
 /**
  * @swagger
  *
@@ -494,12 +480,12 @@ app.get('/api/get/blogs', (_req, res) => __awaiter(void 0, void 0, void 0, funct
  *                 - message
  *                 - blog
  */
-app.put('/api/blogs/edit/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.put('/api/blogs/edit/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const { picture, title, date, description } = req.body;
         // Find the blog by id
-        const blog = yield blogs_1.default.findById(id);
+        const blog = await BlogModel.findById(id);
         if (!blog) {
             return res.status(404).json({ message: 'Blog not found' });
         }
@@ -513,7 +499,7 @@ app.put('/api/blogs/edit/:id', (req, res) => __awaiter(void 0, void 0, void 0, f
         if (description)
             blog.description = description;
         // Save the updated blog
-        yield blog.save();
+        await blog.save();
         // Send response
         res.json({ message: 'Blog updated successfully', blog });
     }
@@ -521,7 +507,7 @@ app.put('/api/blogs/edit/:id', (req, res) => __awaiter(void 0, void 0, void 0, f
         console.error('Error updating blog:', error);
         res.status(500).json({ message: 'Server error' });
     }
-}));
+});
 /**
  * @swagger
  *
@@ -541,10 +527,10 @@ app.put('/api/blogs/edit/:id', (req, res) => __awaiter(void 0, void 0, void 0, f
  *         description: Blog post deleted successfully
  */
 // Define route to delete a blog by ID
-app.delete('/api/blogs/delete/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.delete('/api/blogs/delete/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedBlog = yield blogs_1.default.findByIdAndDelete(id);
+        const deletedBlog = await BlogModel.findByIdAndDelete(id);
         if (!deletedBlog) {
             return res.status(404).json({ message: 'Blog not found' });
         }
@@ -554,7 +540,7 @@ app.delete('/api/blogs/delete/:id', (req, res) => __awaiter(void 0, void 0, void
         console.error('Error deleting blog:', error);
         res.status(500).json({ message: 'Server Error' });
     }
-}));
+});
 /**
  * @swagger
  * /submit-contact-form:
@@ -597,39 +583,39 @@ app.delete('/api/blogs/delete/:id', (req, res) => __awaiter(void 0, void 0, void
  *         description: Server Error
  */
 //  Joi schema for contact form fields
-const contactSchema = joi_1.default.object({
-    name: joi_1.default.string().required().messages({
+const contactSchema = Joi.object({
+    name: Joi.string().required().messages({
         'any.required': 'Name is required'
     }),
-    email: joi_1.default.string().email().required().messages({
+    email: Joi.string().email().required().messages({
         'any.required': 'Email is required',
         'string.email': 'Email must be a valid email address'
     }),
-    subject: joi_1.default.string().required().messages({
+    subject: Joi.string().required().messages({
         'any.required': 'Subject is required'
     }),
-    message: joi_1.default.string().required().messages({
+    message: Joi.string().required().messages({
         'any.required': 'Message is required'
     })
 });
-app.post('/submit-contact-form', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/submit-contact-form', async (req, res) => {
     try {
         // Validate request body against Joi schema
         const { error } = contactSchema.validate(req.body);
         if (error) {
             return res.status(400).json({ message: error.message });
         }
-        // Extract form data from validated request body
+        // Extract form data validated request body
         const { name, email, subject, message } = req.body;
         // Create a new contact document
-        const newContact = new contact_1.default({
+        const newContact = new ContactModel({
             name,
             email,
             subject,
             message
         });
         try {
-            yield newContact.save();
+            await newContact.save();
             res.status(200).json({ message: 'Contact form submitted successfully', Contact: newContact });
         }
         catch (error) {
@@ -641,7 +627,53 @@ app.post('/submit-contact-form', (req, res) => __awaiter(void 0, void 0, void 0,
         console.error(error);
         res.status(500).json({ message: 'Server Error' });
     }
-}));
+});
+/**
+ * @swagger
+ * /api/get/contacts:
+ *   get:
+ *     summary: Get all contact entries
+ *     description: Retrieve a list of all contact entries.
+ *     responses:
+ *       '200':
+ *         description: A list of contact entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Contact'
+ *       '500':
+ *         description: Server Error
+ */
+// Define route to get all contact entries
+app.get('/api/get/contacts', async (_req, res) => {
+    try {
+        // Fetch all contact entries from the database
+        const contacts = await ContactModel.find();
+        // Return the fetched contacts as a JSON response
+        res.status(200).json(contacts);
+    }
+    catch (error) {
+        // Handle errors
+        console.error('Error fetching contacts:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
+// Define route to get all contact entries
+app.get('/api/get/contacts', async (_req, res) => {
+    try {
+        // Fetch all contact entries from the database
+        const contacts = await ContactModel.find();
+        // Return the fetched contacts as a JSON response
+        res.status(200).json(contacts);
+    }
+    catch (error) {
+        // Handle errors
+        console.error('Error fetching contacts:', error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+});
 /**
  * @swagger
  * /api/comments:
@@ -708,13 +740,13 @@ app.post('/submit-contact-form', (req, res) => __awaiter(void 0, void 0, void 0,
  */
 // Define endpoint to add a new comment
 // Define endpoint to add a new comment
-app.post('/api/comments', user_auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/api/comments', isLoggedIn, async (req, res) => {
     try {
         const { text } = req.body;
         // Create a new comment document
-        const newComment = new comments_1.default({ text });
+        const newComment = new CommentModel({ text });
         // Save the new comment to the database
-        yield newComment.save();
+        await newComment.save();
         // Send response
         res.status(201).json({ message: 'Comment added successfully', comment: newComment });
     }
@@ -722,17 +754,18 @@ app.post('/api/comments', user_auth_1.default, (req, res) => __awaiter(void 0, v
         console.error('Error adding comment:', error);
         res.status(500).json({ message: 'Server error' });
     }
-}));
+});
 // Define endpoint to get all comments for a specific post
-app.get('/api/get/comments/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.get('/api/get/comments/', async (req, res) => {
     try {
         // Find all comments for the specified post
-        const comments = yield comments_1.default.find({});
+        const comments = await CommentModel.find({});
         res.status(200).json(comments);
     }
     catch (error) {
         console.error('Error fetching comments:', error);
         res.status(500).json({ message: 'Server Error' });
     }
-}));
-exports.default = app;
+});
+export default app;
+//# sourceMappingURL=index.js.map
