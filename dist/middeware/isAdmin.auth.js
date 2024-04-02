@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
 export const checkUser = (req, res, next) => {
-    const token = req.cookies.jwt;
+    const token = req.cookies.token;
     if (token) {
         jwt.verify(token, process.env.JWT_SECRET, async (err, decodedinfo) => {
             if (err) {
