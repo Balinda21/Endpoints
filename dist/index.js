@@ -13,7 +13,6 @@ import Joi from 'joi';
 import ContactModel from './models/contact.js';
 import CommentModel from './models/comments.js';
 import { checkUser } from './middeware/isAdmin.auth.js';
-import { loginUser } from './Controllers/authController.js';
 dotenv.config();
 const app = express();
 app.use(express.json());
@@ -204,7 +203,7 @@ const loginSchema = Joi.object({
         'any.required': 'Password is required'
     })
 });
-app.post('/login', loginUser, async (req, res) => {
+app.post('/login', async (req, res) => {
     try {
         // Validate request body against Joi schema
         const validationResult = loginSchema.validate(req.body);
@@ -230,8 +229,9 @@ app.post('/login', loginUser, async (req, res) => {
         res.cookie('token', token, { httpOnly: true, maxAge: 86400000 });
         // Set the user_name cookie
         res.cookie('user_name', userName, { maxAge: 86400000 });
+        const test = req.cookies;
         // Send response
-        res.status(200).json({ message: 'Logged in successfully', token, name: user.name });
+        res.status(200).json({ message: 'Logged in successfully', test, name: user.name });
     }
     catch (error) {
         console.error(error);
@@ -409,8 +409,8 @@ app.post('/api/blogs', async (req, res) => {
  *                 $ref: '#/components/schemas/BlogPost'
  */
 // Define route to get all blogs
-app.get('*', checkUser);
-app.get('/api/user', (req, res) => {
+// app.get('*', );
+app.get('/api/user', checkUser, (req, res) => {
     const user = res.locals.user;
     if (user) {
         res.status(200).json(user);

@@ -16,6 +16,8 @@ export const checkUser = (req: Request, res: Response, next: NextFunction) => {
       next()
    } else {
       let user = await UserModel.findById(decodedinfo.id)
+      console.log(decodedinfo)
+      
       res.locals.user = user
       next()
    }

@@ -13,6 +13,7 @@ export const checkUser = (req, res, next) => {
             }
             else {
                 let user = await UserModel.findById(decodedinfo.id);
+                console.log(decodedinfo);
                 res.locals.user = user;
                 next();
             }

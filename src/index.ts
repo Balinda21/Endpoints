@@ -244,7 +244,7 @@ const loginSchema = Joi.object({
   })
 });
 
-app.post('/login', loginUser, async (req: Request, res: Response) => {
+app.post('/login', async (req: Request, res: Response) => {
   try {
     // Validate request body against Joi schema
     const validationResult = loginSchema.validate(req.body);
@@ -273,13 +273,17 @@ app.post('/login', loginUser, async (req: Request, res: Response) => {
     const userName = user.name;
 
     // Set the JWT token cookie
+
     res.cookie('token', token, { httpOnly: true, maxAge: 86400000 });
+
 
     // Set the user_name cookie
     res.cookie('user_name', userName, { maxAge: 86400000 });
+    const test = req.cookies
+
 
     // Send response
-    res.status(200).json({ message: 'Logged in successfully', token, name: user.name });
+    res.status(200).json({ message: 'Logged in successfully', test, name: user.name });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to authenticate user' });
@@ -475,8 +479,8 @@ app.post('/api/blogs', async (req: Request, res: Response) => {
  */
 
 // Define route to get all blogs
-app.get('*', checkUser);
-app.get('/api/user', (req: Request, res: Response) => {
+// app.get('*', );
+app.get('/api/user', checkUser, (req: Request, res: Response) => {
   const user = res.locals.user;
   if (user) {
       res.status(200).json(user);
