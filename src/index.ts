@@ -670,7 +670,7 @@ const contactSchema = Joi.object({
 });
 
 
-app.post('/submit-contact-form',isLoggedIn, async (req: Request, res: Response) => {
+app.post('/submit-contact-form', async (req: Request, res: Response) => {
   try {
     // Validate request body against Joi schema
     const { error } = contactSchema.validate(req.body);
@@ -678,7 +678,7 @@ app.post('/submit-contact-form',isLoggedIn, async (req: Request, res: Response) 
       return res.status(400).json({ message: error.message });
     }
 
-    // Extract form data from validated request body
+    // Extract form data validated request body
     const { name, email, subject, message } = req.body;
 
     // Create a new contact document

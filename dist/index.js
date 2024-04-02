@@ -612,7 +612,7 @@ const contactSchema = joi_1.default.object({
         'any.required': 'Message is required'
     })
 });
-app.post('/submit-contact-form', user_auth_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+app.post('/submit-contact-form', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Validate request body against Joi schema
         const { error } = contactSchema.validate(req.body);
