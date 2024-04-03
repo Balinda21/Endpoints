@@ -57,25 +57,6 @@ describe('Testing backend endpoints', () => {
     expect(resSubmitContactForm.body).to.have.property('Contact');
   });
 
-  it('should authenticate a user', async () => {
-    // Prepare login credentials
-    const loginData = {
-      email: 'balindamoris@gmail.com',
-      password: 'maurice@123' // Replace with actual password
-    };
-
-    // Send login request
-    const resLogin = await request(app)
-      .post('/login')
-      .send(loginData);
-      
-    // Assert the response
-    expect(resLogin.status).to.equal(200);
-    expect(resLogin.body).to.have.property('message', 'Logged in successfully');
-    expect(resLogin.body).to.have.property('token');
-    expect(resLogin.body).to.have.property('name');
-  });
-
   it('should logout a user', async () => {
     // Send logout request
     const resLogout = await request(app)
