@@ -256,21 +256,26 @@ app.post('/login', async (req: Request, res: Response) => {
   
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "default_secret", { expiresIn: '1d' });
     
+    // Assuming you have retrieved the user's name from the database after successful login
+    const userName = user.name;
+
     // Set the JWT token cookie
+
     res.cookie('token', token, { httpOnly: true, maxAge: 86400000 });
 
-    // Set the user's role in the cookie
-    const role = user.role; // Assuming you have a 'role' field in your user model
-    res.cookie('role', role, { maxAge: 86400000 });
+
+    // Set the user_name cookie
+    res.cookie('user_name', userName, { maxAge: 86400000 });
+    const test = req.cookies
+
 
     // Send response
-    res.status(200).json({ message: 'Logged in successfully', name: user.name, role });
+    res.status(200).json({ message: 'Logged in successfully', test, name: user.name });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Failed to authenticate user' });
   }
 });
-
 
 
 
