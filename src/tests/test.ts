@@ -75,4 +75,34 @@ describe('Testing backend endpoints', () => {
     expect(resLogin.body).to.have.property('token');
     expect(resLogin.body).to.have.property('name');
   });
+
+  it('should logout a user', async () => {
+    // Send logout request
+    const resLogout = await request(app)
+      .post('/logout');
+
+    // Assert the response
+    expect(resLogout.status).to.equal(200);
+    expect(resLogout.body).to.have.property('message', 'Logged out successfully');
+  });
+
+  it('should register a new user', async () => {
+    // Prepare registration data
+    const registrationData = {
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'testpassword'
+    };
+
+    // Send registration request
+    const resRegister = await request(app)
+      .post('/register')
+      .send(registrationData);
+
+    // Assert the response
+    expect(resRegister.status).to.equal(201);
+    expect(resRegister.body).to.have.property('name', registrationData.name);
+    expect(resRegister.body).to.have.property('email', registrationData.email);
+    // Assuming you return the user object in the registration response
+  });
 });

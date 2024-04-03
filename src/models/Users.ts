@@ -5,7 +5,6 @@ export interface IUser extends Document {
   email: string;
   password: string;
   isAdmin: boolean; // Add isAdmin property
-  role:string;
   
 }
 
@@ -14,7 +13,6 @@ const userSchema = new Schema({
   email: { type: String, required: true },
   password: { type: String, required: true },
   isAdmin: { type: Boolean, default: false }, // Default value is false
-  role: { type: String, enum: ['admin', 'user'], default: 'user' } 
 });
 
 const UserModel = mongoose.model<IUser>('User', userSchema);
