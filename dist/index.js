@@ -111,22 +111,6 @@ app.get('/users', async (_req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 });
-app.post('create/users', async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-        if (!name || !email || !password) {
-            return res.status(400).json({ message: 'Missing required fields' });
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new UserModel({ name, email, password: hashedPassword });
-        await newUser.save();
-        res.status(200).json(newUser);
-    }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server Error' });
-    }
-});
 app.put('edit/users/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -227,15 +211,13 @@ app.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "default_secret", { expiresIn: '1d' });
-        // Assuming you have retrieved the user's name from the database after successful login
-        const userName = user.name;
         // Set the JWT token cookie
         res.cookie('token', token, { httpOnly: true, maxAge: 86400000 });
-        // Set the user_name cookie
-        res.cookie('user_name', userName, { maxAge: 86400000 });
-        const test = req.cookies;
+        // Set the user's role in the cookie
+        const role = user.role; // Assuming you have a 'role' field in your user model
+        res.cookie('role', role, { maxAge: 86400000 });
         // Send response
-        res.status(200).json({ message: 'Logged in successfully', test, name: user.name });
+        res.status(200).json({ message: 'Logged in successfully', name: user.name, role });
     }
     catch (error) {
         console.error(error);
