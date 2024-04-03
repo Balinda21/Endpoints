@@ -361,10 +361,10 @@ const registerSchema = Joi.object({
 // register router
 app.post('/register', async (req: Request, res: Response) => {
   try {
-      // Extract user details from request body
+      
       const { name, email, password } = req.body;
 
-      // Hash the password
+      // Hashing password
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Create a new user document with hashed password and default isAdmin value
