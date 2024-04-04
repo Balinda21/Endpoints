@@ -133,7 +133,26 @@ interface Contact {
   subject: string;
   message: string;
 }
+// User routes
 
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     description: Retrieve a list of all users.
+ *     responses:
+ *       200:
+ *         description: A list of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       500:
+ *         description: Server Error
+ */
 
 app.get('/users', async (_req: Request, res: Response) => {
   try {
@@ -144,6 +163,39 @@ app.get('/users', async (_req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
+
+/**
+ * @swagger
+ * /edit/users/{id}:
+ *   put:
+ *     summary: Update a user
+ *     description: Update the details of a user by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       200:
+ *         description: The updated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server Error
+ */
 
 app.put('edit/users/:id',  async  (req: Request, res: Response) => {
   try {
@@ -167,6 +219,27 @@ app.put('edit/users/:id',  async  (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server Error' });
   }
 });
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Delete a user by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the user to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: User deleted successfully
+ *       500:
+ *         description: Server Error
+ */
+
 
 app.delete('/users/:id', async (req: Request, res: Response) => {
   try {
