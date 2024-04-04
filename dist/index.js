@@ -18,7 +18,7 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use((req, res, next) => {
-    const allowedOrigins = ['https://balinda21.github.io'];
+    const allowedOrigins = ['https://balinda21.github.io', 'https://portfolio-backend-cy9p.onrender.com/endpoints-docs/'];
     const origin = req.headers.origin;
     if (origin && allowedOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);

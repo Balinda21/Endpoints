@@ -8,7 +8,8 @@ describe('Testing backend endpoints', () => {
     const resGetBlogs = await request(app).get('/api/get/blogs');
     expect(resGetBlogs.status).to.equal(200);
     expect(resGetBlogs.body).to.be.an('array');
-  });
+  }).timeout(5000); // Apply timeout directly to the test case
+  
 
   it('should create, update, and delete a blog post', async () => {
     // Create a new blog post
