@@ -1,18 +1,18 @@
-version: 2.1
-
-workflows:
-  test-endpoints:
-    jobs:
-      - test
+name: Unit Tests
+on: [pull_request]
 jobs:
-  test:
-    docker:
-      - image: cimg/node:21.7.1
+  tests:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 16.x]
     steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: npm install
-      - run:
-          name: Run Tests
-          command: npm run test
+      - uses: actions/checkout@v2
+      - name: Use node.js-${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: npm install
+        run: npm ci
+      - name: tests
+        run: npm test
