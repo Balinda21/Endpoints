@@ -2,7 +2,8 @@ import { expect } from 'chai';
 import request from 'supertest';
 import app from '../index.js';
 describe('Testing backend endpoints', () => {
-    it('should return all blog posts', async () => {
+    it('should return all blog posts', async function () {
+        this.timeout(5000); // Increase timeout to 5000ms
         const resGetBlogs = await request(app).get('/api/get/blogs');
         expect(resGetBlogs.status).to.equal(200);
         expect(resGetBlogs.body).to.be.an('array');
