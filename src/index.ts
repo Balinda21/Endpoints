@@ -100,7 +100,7 @@ const options = {
     },
     security: [{ bearerAuth: [] }]
   },
-  apis: ["./dist/*.js"] // Adjusted path to match route handler files
+  apis: ["./dist/*.js"] 
 };
 
 
