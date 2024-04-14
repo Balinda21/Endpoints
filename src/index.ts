@@ -13,12 +13,18 @@ import Joi from 'joi';
 import ContactModel, { Contact as ContactModelInterface } from './models/contact.js'; 
 import CommentModel from './models/comments.js';
 import { checkUser } from './middeware/isAdmin.auth.js';
+import cors from 'cors';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({
+  origin: 'https://portfolio-backend-cy9p.onrender.com', // Allow requests from this origin
+  credentials: true // Allow credentials (cookies, authorization headers, etc.)
+}));
+
 
 const options = {
   definition: {
