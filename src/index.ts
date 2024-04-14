@@ -50,7 +50,7 @@ const options = {
     },
     servers: [
       {
-        url: "https://portfolio-backend-cy9p.onrender.com/endpoints-docs/"
+        url: "http://localhost:3000"
       }
     ],
     components: {
