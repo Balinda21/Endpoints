@@ -17,17 +17,6 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use((req, res, next) => {
-    const allowedOrigins = ['https://balinda21.github.io', 'https://portfolio-backend-cy9p.onrender.com/endpoints-docs/'];
-    const origin = req.headers.origin;
-    if (origin && allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    next();
-});
 const options = {
     definition: {
         openapi: "3.0.0",
@@ -92,7 +81,7 @@ const options = {
         },
         security: [{ bearerAuth: [] }]
     },
-    apis: ["./dist/*.js"] // Adjusted path to match route handler files
+    apis: ["./dist/*.js"]
 };
 mongoose.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net/Tasks')
     .then(() => {

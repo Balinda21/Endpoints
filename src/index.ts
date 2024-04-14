@@ -9,7 +9,6 @@ import dotenv from 'dotenv';
 import swaggerjsdoc from 'swagger-jsdoc';
 import swaggerui from 'swagger-ui-express';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
 import Joi from 'joi';
 import ContactModel, { Contact as ContactModelInterface } from './models/contact.js'; 
 import CommentModel from './models/comments.js';
@@ -20,21 +19,6 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-
-app.use((req, res, next) => {
-  const allowedOrigins = ['https://balinda21.github.io','https://portfolio-backend-cy9p.onrender.com/endpoints-docs/'];
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  next();
-});
-
-
-
 
 const options = {
   definition: {
@@ -103,17 +87,13 @@ const options = {
   apis: ["./dist/*.js"] 
 };
 
-
-
 mongoose.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net/Tasks')
   .then(() => {
-
     const spacs = swaggerjsdoc(options)
     app.use(
       '/endpoints-docs',
       swaggerui.serve,
       swaggerui.setup(spacs)
-
     )
     console.log('Connected to database');
   })
@@ -133,6 +113,7 @@ interface Contact {
   subject: string;
   message: string;
 }
+
 // User routes
 
 /**
