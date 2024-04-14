@@ -6,8 +6,8 @@ import BlogModel from './models/blogs.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import swaggerjsdoc from 'swagger-jsdoc';
-import swaggerui from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 import cookieParser from 'cookie-parser';
 import Joi from 'joi';
 import ContactModel from './models/contact.js';
@@ -18,11 +18,14 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-    origin: 'https://portfolio-backend-cy9p.onrender.com', // Allow requests from this origin
-    credentials: true // Allow credentials (cookies, authorization headers, etc.)
-}));
-const options = {
+// Define CORS options
+const corsOptions = {
+    origin: 'https://portfolio-backend-cy9p.onrender.com',
+    credentials: true,
+};
+// Enable CORS for all routes
+app.use(cors(corsOptions));
+const swaggerOptions = {
     definition: {
         openapi: "3.0.0",
         info: {
@@ -88,10 +91,10 @@ const options = {
     },
     apis: ["./dist/*.js"]
 };
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/endpoints-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 mongoose.connect('mongodb+srv://balinda:Famillyy123@cluster0.8izzdgk.mongodb.net/Tasks')
     .then(() => {
-    const spacs = swaggerjsdoc(options);
-    app.use('/endpoints-docs', swaggerui.serve, swaggerui.setup(spacs));
     console.log('Connected to database');
 })
     .catch((error) => console.log(error));
